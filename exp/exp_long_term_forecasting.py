@@ -2,6 +2,7 @@ from data_provider.data_factory import data_provider
 from exp.exp_basic import Exp_Basic
 from utils.tools import EarlyStopping, adjust_learning_rate, visual
 from utils.metrics import metric
+from utils.visual import plot_predictions_vs_targets
 import torch
 import torch.nn as nn
 from torch import optim
@@ -35,8 +36,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.MSELoss()
-        return criterion
+        """替换整个方法"""
+        model_ref = self.model.module if hasattr(self.model, 'module') else self.model
+        if hasattr(model_ref, 'get_criterion'):
+            return model_ref.get_criterion()
+        return nn.MSELoss()
  
 
     def vali(self, vali_data, vali_loader, criterion):
@@ -98,6 +102,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             train_loss = []
 
             self.model.train()
+            # criterion = self._select_criterion()
             epoch_time = time.time()
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
                 iter_count += 1
@@ -131,7 +136,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     train_loss.append(loss.item())
 
                 if (i + 1) % 100 == 0:
-                    print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
+                    print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, np.average(train_loss)))
                     speed = (time.time() - time_now) / iter_count
                     left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
                     print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
@@ -149,6 +154,8 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
+
+            # criterion = nn.MSELoss()
             test_loss = self.vali(test_data, test_loader, criterion)
 
             print("Epoch: {0}, Steps: {1} | Train Loss: {2:.7f} Vali Loss: {3:.7f} Test Loss: {4:.7f}".format(
@@ -251,6 +258,10 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             dtw = np.array(dtw_list).mean()
         else:
             dtw = 'Not calculated'
+        total_params = sum(p.numel() for p in self.model.parameters())
+        trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        print(f"Total params: {total_params:,}")
+        print(f"Trainable params: {trainable_params:,}")
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
@@ -260,6 +271,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         f.write('\n')
         f.write('\n')
         f.close()
+        plot_predictions_vs_targets(preds, trues, folder_path=folder_path)
 
         np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
         np.save(folder_path + 'pred.npy', preds)

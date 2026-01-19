@@ -1,61 +1,62 @@
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=0
 
-model_name=TimeXer
-des='Timexer-MS'
+model_name=TD_CaA
 
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
-  --data_path ETTm2.csv \
-  --model_id ETTm2_96_96 \
+  --root_path ./dataset/futures/ \
+  --data_path futures_CF.csv \
+  --model_id Futures_96_96 \
   --model $model_name \
-  --data ETTm2 \
-  --features MS \
+  --data Futures \
+  --target LastPrice \
+  --features M \
   --seq_len 96 \
   --label_len 48 \
   --pred_len 96 \
   --e_layers 1 \
   --factor 3 \
-  --enc_in 7 \
-  --dec_in 7 \
+  --enc_in 13 \
+  --dec_in 13 \
   --c_out 7 \
-  --d_model 512 \
-  --batch_size 16 \
-  --des $des \
+  --d_model 256 \
+  --batch_size 4 \
+  --des 'exp' \
   --itr 1
+
 
 # python -u run.py \
 #   --task_name long_term_forecast \
 #   --is_training 1 \
 #   --root_path ./dataset/ETT-small/ \
-#   --data_path ETTm2.csv \
-#   --model_id ETTm2_96_192 \
+#   --data_path ETTh1.csv \
+#   --model_id ETTh1_96_192 \
 #   --model $model_name \
-#   --data ETTm2 \
-#   --features MS \
+#   --data ETTh1 \
+#   --features M \
 #   --seq_len 96 \
 #   --label_len 48 \
 #   --pred_len 192 \
-#   --e_layers 1 \
+#   --e_layers 2 \
 #   --factor 3 \
 #   --enc_in 7 \
 #   --dec_in 7 \
 #   --c_out 7 \
-#   --d_model 256 \
+#   --des 'Exp' \
+#   --d_model 128 \
 #   --batch_size 4 \
-#   --des $des \
 #   --itr 1
 
 # python -u run.py \
 #   --task_name long_term_forecast \
 #   --is_training 1 \
 #   --root_path ./dataset/ETT-small/ \
-#   --data_path ETTm2.csv \
-#   --model_id ETTm2_96_336 \
+#   --data_path ETTh1.csv \
+#   --model_id ETTh1_96_336 \
 #   --model $model_name \
-#   --data ETTm2 \
-#   --features MS \
+#   --data ETTh1 \
+#   --features M \
 #   --seq_len 96 \
 #   --label_len 48 \
 #   --pred_len 336 \
@@ -64,20 +65,21 @@ python -u run.py \
 #   --enc_in 7 \
 #   --dec_in 7 \
 #   --c_out 7 \
-#   --d_model 128 \
-#   --batch_size 128 \
-#   --des $des \
+#   --des 'Exp' \
+#   --d_model 512 \
+#   --d_ff 1024 \
+#   --batch_size 16 \
 #   --itr 1
 
 # python -u run.py \
 #   --task_name long_term_forecast \
 #   --is_training 1 \
 #   --root_path ./dataset/ETT-small/ \
-#   --data_path ETTm2.csv \
-#   --model_id ETTm2_96_720 \
+#   --data_path ETTh1.csv \
+#   --model_id ETTh1_96_720 \
 #   --model $model_name \
-#   --data ETTm2 \
-#   --features MS \
+#   --data ETTh1 \
+#   --features M \
 #   --seq_len 96 \
 #   --label_len 48 \
 #   --pred_len 720 \
@@ -86,7 +88,8 @@ python -u run.py \
 #   --enc_in 7 \
 #   --dec_in 7 \
 #   --c_out 7 \
-#   --d_model 128 \
-#   --batch_size 128 \
-#   --des $des \
+#   --des 'Exp' \
+#   --d_model 256 \
+#   --d_ff 1024 \
+#   --batch_size 16 \
 #   --itr 1

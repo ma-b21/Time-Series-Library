@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=2
 
-model_name=TimeXer
-des='Timexer-MS'
+model_name=TD_CaA
+des='TD_CaA-MS'
 
 # python -u run.py \
 #   --task_name long_term_forecast \
@@ -20,9 +20,17 @@ des='Timexer-MS'
 #   --enc_in 7 \
 #   --dec_in 7 \
 #   --c_out 7 \
-#   --d_model 512 \
 #   --d_ff 512 \
 #   --des $des \
+#   --dropout 0.2 \
+#   --d_model 14 \
+#   --k_lookback 96 \
+#   --batch_size 32 \
+#   --moving_avg 1 \
+#   --learning_rate 0.0003\
+#   --train_epochs 20 \
+#   --patience 3 \
+#   --fft \
 #   --itr 1
 
 # python -u run.py \
@@ -42,11 +50,20 @@ des='Timexer-MS'
 #   --enc_in 7 \
 #   --dec_in 7 \
 #   --c_out 7 \
-#   --d_model 128 \
+#   --d_model 14 \
 #   --d_ff 128 \
 #   --batch_size 4 \
 #   --des $des \
-#   --itr 1
+  # --dropout 0.1 \
+  # --d_model 28 \
+  # --k_lookback 96 \
+  # --batch_size 32 \
+  # --moving_avg 1 \
+  # --learning_rate 0.001\
+  # --train_epochs 20 \
+  # --patience 3 \
+  # --fft \
+  # --itr 1
 
 # python -u run.py \
 #   --task_name long_term_forecast \
@@ -65,10 +82,18 @@ des='Timexer-MS'
 #   --enc_in 7 \
 #   --dec_in 7 \
 #   --c_out 7 \
-#   --d_model 512 \
 #   --d_ff 512 \
 #   --batch_size 32 \
 #   --des $des \
+#   --dropout 0.2 \
+#   --d_model  128\
+#   --k_lookback 96 \
+#   --batch_size 32 \
+#   --moving_avg 1 \
+#   --learning_rate 0.0005\
+#   --train_epochs 20 \
+#   --patience 3 \
+#   --fft \
 #   --itr 1
 
 python -u run.py \
@@ -91,4 +116,13 @@ python -u run.py \
   --d_model 512 \
   --batch_size 128 \
   --des $des \
+  --dropout 0.2 \
+  --d_model  256\
+  --k_lookback 96 \
+  --batch_size 32 \
+  --moving_avg 1 \
+  --learning_rate 0.0005\
+  --train_epochs 20 \
+  --patience 3 \
+  --fft \
   --itr 1

@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES=0
 
-model_name=PatchTST
+model_name=TD_CaA
 
 python -u run.py \
   --task_name long_term_forecast \
@@ -14,21 +14,23 @@ python -u run.py \
   --seq_len 36 \
   --label_len 18 \
   --pred_len 24 \
-       --e_layers 2 \
-      --d_layers 1 \
-      --factor 3 \
-      --enc_in 7 \
-      --dec_in 7 \
-      --c_out 7 \
-      --d_model 64 \
-      --d_ff 128 \
-      --dropout 0.4 \
-      --des 'Exp' \
-      --itr 1 \
-      --batch_size 16 \
-      --learning_rate 0.0005 \
-      --train_epochs 20 \
-      --patience 10
+  --e_layers 4 \
+  --d_layers 1 \
+  --factor 3 \
+  --enc_in 7 \
+  --dec_in 7 \
+  --c_out 7 \
+  --des 'Exp' \
+  --dropout 0.05 \
+  --batch_size 2 \
+  --d_model 164 \
+  --moving_avg 1 \
+  --k_lookback 24 \
+  --learning_rate 0.0001 \
+  --train_epochs 10 \
+  --fft \
+  --itr 1
+
 # python -u run.py \
 #   --task_name long_term_forecast \
 #   --is_training 1 \

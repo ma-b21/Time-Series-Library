@@ -1,7 +1,7 @@
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=3
 
-model_name=TimeXer
-des='Timexer-MS'
+model_name=TD_CaA
+des='TD_CaA-MS'
 
 
 # python -u run.py \
@@ -22,7 +22,15 @@ des='Timexer-MS'
 #   --dec_in 21 \
 #   --c_out 21 \
 #   --des $des \
-#   --d_model 128 \
+#   --dropout 0.05 \
+#   --d_model 512 \
+#   --k_lookback 8 \
+#   --batch_size 32 \
+#   --moving_avg 1 \
+#   --learning_rate 0.0001 \
+#   --train_epochs 20 \
+#   --patience 3 \
+#   --fft \
 #   --itr 1
 
 # python -u run.py \
@@ -43,7 +51,15 @@ des='Timexer-MS'
 #   --dec_in 21 \
 #   --c_out 21 \
 #   --des $des \
-#   --d_model 128 \
+#   --dropout 0.05 \
+#   --d_model 512 \
+#   --k_lookback 4 \
+#   --batch_size 32 \
+#   --moving_avg 1 \
+#   --learning_rate 0.0001 \
+#   --train_epochs 20 \
+#   --patience 3 \
+#   --fft \
 #   --itr 1
 
 # python -u run.py \
@@ -64,7 +80,15 @@ des='Timexer-MS'
 #   --dec_in 21 \
 #   --c_out 21 \
 #   --des $des \
-#   --d_model 128 \
+#   --dropout 0.05 \
+#   --d_model 512 \
+#   --k_lookback 4 \
+#   --batch_size 32 \
+#   --moving_avg 1 \
+#   --learning_rate 0.0001 \
+#   --train_epochs 20 \
+#   --patience 3 \
+#   --fft \
 #   --itr 1
 
 python -u run.py \
@@ -85,5 +109,13 @@ python -u run.py \
   --dec_in 21 \
   --c_out 21 \
   --des $des \
-  --d_model 128 \
+  --dropout 0.05 \
+  --d_model 512 \
+  --k_lookback 4 \
+  --batch_size 32 \
+  --moving_avg 1 \
+  --learning_rate 0.0003 \
+  --train_epochs 20 \
+  --patience 3 \
+  --fft \
   --itr 1

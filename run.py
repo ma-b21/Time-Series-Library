@@ -1,5 +1,4 @@
 import argparse
-import os
 import torch
 import torch.backends
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
@@ -156,6 +155,9 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float, default=0.1, help='KNN for Graph Construction')
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
+    parser.add_argument('--k_lookback', type=int, default=64, help='Dynamic Routing in MoE')
+    parser.add_argument('--time_dim', type=int, default=8, help='time dim')
+    parser.add_argument('--fft', default=False, action="store_true", help="FFT")
 
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:
@@ -196,25 +198,19 @@ if __name__ == '__main__':
         for ii in range(args.itr):
             # setting record of experiments
             exp = Exp(args)  # set experiments
-            setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
+            setting = '{}_{}_{}_{}_bs{}_lr{}_pt{}_dp{}_dm{}_ma{}_lb{}_fft{}_{}'.format(
                 args.task_name,
                 args.model_id,
                 args.model,
                 args.data,
-                args.features,
-                args.seq_len,
-                args.label_len,
-                args.pred_len,
+                args.batch_size,
+                args.learning_rate,
+                args.patience,
+                args.dropout,
                 args.d_model,
-                args.n_heads,
-                args.e_layers,
-                args.d_layers,
-                args.d_ff,
-                args.expand,
-                args.d_conv,
-                args.factor,
-                args.embed,
-                args.distil,
+                args.moving_avg,
+                args.k_lookback,
+                args.fft,
                 args.des, ii)
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))

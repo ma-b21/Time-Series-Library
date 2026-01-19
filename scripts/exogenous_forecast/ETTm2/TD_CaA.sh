@@ -1,7 +1,7 @@
 export CUDA_VISIBLE_DEVICES=2
 
-model_name=TimeXer
-des='Timexer-MS'
+model_name=TD_CaA
+des='TD_CaA-MS'
 
 python -u run.py \
   --task_name long_term_forecast \
@@ -20,9 +20,16 @@ python -u run.py \
   --enc_in 7 \
   --dec_in 7 \
   --c_out 7 \
-  --d_model 512 \
-  --batch_size 16 \
   --des $des \
+  --dropout 0.05 \
+  --d_model 512 \
+  --k_lookback 8 \
+  --batch_size 16 \
+  --moving_avg 1 \
+  --learning_rate 0.00035 \
+  --train_epochs 3 \
+  --patience 3 \
+  --fft \
   --itr 1
 
 # python -u run.py \
