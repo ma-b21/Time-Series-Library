@@ -21,16 +21,18 @@ python -u run.py \
   --c_out 21 \
   --des 'Exp' \
   --d_ff 512 \
-  --d_model 256 \
+  --d_model 42 \
   --dropout 0.05 \
   --k_lookback 8 \
   --moving_avg 1 \
   --batch_size 32 \
-  --learning_rate 0.0003 \
+  --learning_rate 0.001 \
   --train_epochs 15 \
   --patience 5 \
-  --fft \
-  --itr 1 
+  --method "Dynamic"\
+  --hidden 576\
+  --bias \
+  --interact
 
 # python -u run.py \
 #   --task_name long_term_forecast \

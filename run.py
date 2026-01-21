@@ -158,7 +158,10 @@ if __name__ == '__main__':
     parser.add_argument('--k_lookback', type=int, default=64, help='Dynamic Routing in MoE')
     parser.add_argument('--time_dim', type=int, default=8, help='time dim')
     parser.add_argument('--fft', default=False, action="store_true", help="FFT")
-
+    parser.add_argument('--method', default="Dynamic", help="Methods for distribution shift tracer used")
+    parser.add_argument('--hidden', type=int, default=10, help="hidden size")
+    parser.add_argument('--bias', default=False, action="store_true", help="bias")
+    parser.add_argument('--interact', default=False, action="store_true", help="whether interact the channels")
     args = parser.parse_args()
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))

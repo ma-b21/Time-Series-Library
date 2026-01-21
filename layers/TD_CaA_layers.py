@@ -155,12 +155,12 @@ class VectorizedCausalProjection(nn.Module):
         rolling_min = -F.max_pool1d(-query_feat, kernel_size=5, stride=1, padding=2)
         
         gen_in = torch.cat([self.dropout(query_feat), g_mean, rolling_std, third_moment, rolling_max, rolling_min], dim=1)
-        kernels = self.kernel_generator(gen_in).view(BM, E, K, T)
-        ctx_padded = F.pad(context_block, (K-1, 0))
-        ctx_windows = ctx_padded.unfold(dimension=2, size=K, step=1).permute(0, 1, 3, 2)
+        kernels = self.kernel_generator(gen_in).view(BM, E, K, T)   # 对每个时间点生成一个前看K布的权重向量
+        ctx_padded = F.pad(context_block, (K-1, 0))   # [BM, E, T+k-1]
+        ctx_windows = ctx_padded.unfold(dimension=2, size=K, step=1).permute(0, 1, 3, 2) # [BM, E, K, T]
         attn_weights = F.softmax(kernels, dim=2)
         y_conservative = (ctx_windows * attn_weights).sum(dim=2)
-        return y_conservative
+        return y_conservative  #[BM, E, T]
 
 class GatedExoProjector(nn.Module):
     def __init__(self, n_vars, d_model=32, dropout=0.1):

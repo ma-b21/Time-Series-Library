@@ -1,186 +1,137 @@
 import torch
 import torch.nn as nn
-from layers.TD_CaA_layers import RevIN, Statistic_Features, Lite_Temp_Causal_Address, Full_Temp_Causal_Address, \
-    VectorizedCausalProjection, GatedExoProjector
+from einops.layers.torch import Rearrange
+from layers.TD_CaA_utils import RevIN, Temp_Causal_Address, DynamicDistributionShiftTracer, GatedInterAct, SimpleDistributionShiftTracer
+
+###TODO 
+#比较RNN和TCA，因为回看seqlen时表现好，有点像RNN呢
+#SimpleDistreiTracer表现差，说明project效果好，这里可以做消融实验
 
 
 class Model(nn.Module):
     def __init__(self, configs):
         super().__init__()
         self.configs = configs
-        self.features = configs.features # 'M', 'S', 'MS'
+        self.features = configs.features # 'M','MS'
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
-        self.enc_in = configs.enc_in
+        self.exo_dim = configs.enc_in
         self.k_lookback = configs.k_lookback 
-        self.moving_avg = configs.moving_avg
-        self.fft = configs.fft
+        self.method = configs.method  # "Dynamic", "Simple"
+        self.hidden = configs.hidden
+        self.endo_dim = 1 if self.features == "MS" else self.exo_dim
+        self.emb_dim = self.exo_dim + 1  #编码后每一个内生变量有exo_dim个外生编码以及其自身
         
         # Hyperparameters
-        self.m_expand = 64
-        hd = configs.d_model
+        d_model = configs.d_model
         dropout = configs.dropout
-        time_dim = 8
+        bias = configs.bias
         
-        self.revin = RevIN(
-            self.enc_in if self.features != 'S' else 1
-        )
-        self.linear_trend = nn.Linear(self.seq_len, self.pred_len)
-
-        self.is_lite_mode = (self.features == 'S')
-
-        if self.is_lite_mode:
-            # === Lite Mode Components ===
-            self.raw_proj = nn.Conv1d(1, self.m_expand, kernel_size=3, padding=1)
-            
-            self.tca_lite = Lite_Temp_Causal_Address(
-                d_model=self.m_expand, 
-                k_lookback=self.k_lookback, 
-                dropout=dropout
-            )
-            
-            self.lite_fusion = nn.Sequential(
-                nn.Linear(self.m_expand, self.m_expand),
-                nn.GELU()
-            )
-            # 单流 BiGRU
-            self.backbone_rnn = nn.GRU(self.m_expand, self.m_expand, batch_first=True, bidirectional=True)
-            self.head = nn.Linear(self.m_expand * 2 * self.seq_len, self.pred_len)
-            
-        else:
-            # === Full Mode Components ===
-            self.time_proj = nn.Sequential(nn.Linear(4, time_dim), nn.ReLU(), nn.Dropout(dropout))
-            
-            self.tca_full = Full_Temp_Causal_Address(
-                endo_dim=1,
-                exo_dim=self.m_expand, 
-                time_dim=time_dim, 
-                k_lookback=self.k_lookback,
-                roll_win=self.moving_avg, 
-                FFT=self.fft, 
-                dropout=dropout,
-                seq_len=self.seq_len
-            )
-            
-            # 双流 Backbone
-            self.rba_layer = VectorizedCausalProjection(self.m_expand, self.m_expand, self.k_lookback, dropout)
-            self.backbone_rnn = nn.GRU(self.m_expand, self.m_expand, batch_first=True, bidirectional=True)
-            self.mix = nn.Linear(self.m_expand * 3, hd)
-            self.head = nn.Linear(hd * self.seq_len, self.pred_len) # Seq head
-            self.output_proj = nn.Linear(2 * self.pred_len, self.pred_len)
-            
-            if self.features == 'M':
-                self.exo_adapter = GatedExoProjector(n_vars=self.enc_in, d_model=64, dropout=dropout)
-            else:
-                self.exo_adapter = None
-
-    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
-        B, T, M_in = x_enc.shape
-        x_norm = self.revin.normalize(x_enc)
+        self.revin = RevIN(self.exo_dim)
+        # backbone
+        ## embedding
         
-        if self.is_lite_mode:
-            if M_in > 1:
-                x_in_raw = x_norm[:, :, -1:]
-            else:
-                x_in_raw = x_norm
-            
-            x_in = x_in_raw.permute(0, 2, 1)
-            
-            trend = self.linear_trend(x_in.squeeze(1))
-            
-            feat_raw = self.raw_proj(x_in)
-            feat_tca = self.tca_lite(x_in)
-            
-            feat_fused = feat_raw + feat_tca
-            feat_fused = self.lite_fusion(feat_fused.permute(0, 2, 1))
-            
-            enc_out, _ = self.backbone_rnn(feat_fused)
-            
-            seasonal = self.head(enc_out.reshape(B, -1))
-            final = seasonal + trend
-            
-            final = final.unsqueeze(-1)
-            return self.revin.denormalize(final)
+        ### trend trace
+        self.linear_trend = nn.Linear(self.seq_len, self.pred_len) #[B*E, P]
+        
+        ### channel indepence
+        self.TCA = Temp_Causal_Address(self.endo_dim, self.exo_dim, self.k_lookback, dropout)  #[B, E, F+1, T]
+        self.sequencial = nn.GRU(self.emb_dim, self.emb_dim, batch_first=True, bidirectional=True)  #[B*E, T, 2*(F+1)]
+        if self.method == "Dynamic": 
+            self.stat_tracer = DynamicDistributionShiftTracer(self.emb_dim, self.k_lookback, dropout)
+        elif self.method == "Simple":
+            self.stat_tracer = SimpleDistributionShiftTracer(self.emb_dim, self.k_lookback, dropout)
         else:
-            aug_endo, exo_emb = None, None
-            x_trend_in = None
-            curr_bs = 0
+            self.stat_tracer = None  # 轻量级 
             
-            if self.features == 'MS':
-                curr_bs = B
-                
-                endo_data = x_norm[:, :, -1:]
-                endo_flat = endo_data.permute(0, 2, 1)
-                x_trend_in = endo_flat.squeeze(1)
-                
-                if M_in > 1:
-                    exo_data = x_norm[:, :, :-1]
-                    exo_flat = exo_data.permute(0, 2, 1).reshape(B * (M_in-1), 1, T)
-                else:
-                    exo_flat = None
-                
-                # Time Embs
-                time_emb_endo = None
-                time_emb_exo = None
-                if x_mark_enc is not None:
-                    xm_endo = x_mark_enc[:, :, :4]
-                    time_emb_endo = self.time_proj(xm_endo).permute(0, 2, 1)
-                    
-                    if exo_flat is not None:
-                        xm_exo = xm_endo.unsqueeze(1).repeat(1, M_in-1, 1, 1).reshape(B*(M_in-1), T, -1)
-                        time_emb_exo = self.time_proj(xm_exo).permute(0, 2, 1)
-                
-                aug_endo, exo_emb = self.tca_full(
-                    endo=endo_flat, x_mark_enc=time_emb_endo,
-                    exo=exo_flat, x_mark_exo=time_emb_exo
-                )
+        ### channel Interactive
+        self.interact = GatedInterAct(self.emb_dim, d_model, dropout) if configs.interact else None #[B*E, T, F+1]
+        
+        ## Simply Linear Sequential  Layer
+        current_dim = 2 * self.emb_dim 
+        if self.stat_tracer is not None:
+            current_dim += self.emb_dim # stat_tracer 输出维度是 emb_dim
+        if self.interact is not None:
+            current_dim += self.emb_dim # interact 输出维度是 emb_dim
+        
+        self.Linear = nn.Sequential(
+            nn.Linear(current_dim, self.hidden, bias),
+            Rearrange('B T H -> B (T H)'),
+            nn.Linear(self.hidden * self.seq_len, self.pred_len, bias)
+        )  #[B*E, P]
+        
+        self.linear_head = nn.Linear(2 * self.pred_len, self.pred_len, bias)
+        
+    def forecast(self, x):
+        # preprocess
+        x = self.revin.normalize(x)
+        x = x.permute(0, 2, 1)
+        B, F, T = x.shape
+        endo = x[:, -1:, :] if self.features == "MS" else x
+        E = 1 if self.features == "MS" else F
+        endo_CI = endo.reshape(B * E, 1, T)
+        endo_CI = endo_CI.squeeze(1) #[B*E, T]    
+        
+        # backbone
+        trend = self.linear_trend(endo_CI) #[B*E, P]
+        
+        features_list = []
+        x_TCA = self.TCA(endo, x) #[B, E, F+1, T]
+        x_TCA = x_TCA.reshape(B * E, 1, F+1, T)
+        x_TCA = x_TCA.squeeze(1) #[B*E, F+1, T]
+        x_gru_in = x_TCA.permute(0, 2, 1) # [B*E, T, F+1]
+        x_seq, _ = self.sequencial(x_gru_in)  # [B*E, T, 2*(F+1)]
+        features_list.append(x_seq)
 
-            else: # Features == 'M'
-                curr_bs = B * M_in
-                x_flat = x_norm.permute(0, 2, 1).reshape(B * M_in, 1, T)
-                x_trend_in = x_flat.squeeze(1)
-                
-                time_emb = None
-                if x_mark_enc is not None:
-                    xm = x_mark_enc[:, :, :4].unsqueeze(1).repeat(1, M_in, 1, 1).reshape(B*M_in, T, -1)
-                    time_emb = self.time_proj(xm).permute(0, 2, 1)
-                
-                # Self-Addressing
-                aug_endo, exo_emb = self.tca_full(
-                    endo=x_flat, x_mark_enc=time_emb,
-                    exo=None
-                )
-
-            fused_feat = aug_endo + exo_emb
+        if self.stat_tracer is not None:
+            # [B*E, F+1, T] ->  [B*E, T, F+1]
+            x_stat = self.stat_tracer(x_TCA) 
+            features_list.append(x_stat)
+          
+        if self.interact is not None:
+            x_interact = self.interact(x_TCA) 
+            features_list.append(x_interact)
             
-            attn_out = self.rba_layer(query_feat=fused_feat, context_block=fused_feat)
-            rnn_out, _ = self.backbone_rnn(fused_feat.permute(0, 2, 1))
+        emb_comb = torch.cat(features_list, dim=-1) 
+    
+        residual = self.Linear(emb_comb)   # [B*E, T, Middle_Dim] -> [B*E, P]
+        
+        final_comb = torch.cat([trend, residual], dim=1)
+        
+        final_pred = self.linear_head(final_comb)
+        
+        # [B*E, P] -> [B, E, P]
+        final_pred = final_pred.reshape(B, E, self.pred_len)
+        
+        # Denormalize
+        final_pred = final_pred.permute(0, 2, 1)
+        if self.features == 'M':
+            final_pred = self.revin.denormalize(final_pred)
             
-            combined = torch.cat([attn_out, rnn_out.permute(0,2,1)], dim=1)
-            code = self.mix(combined.permute(0, 2, 1)).reshape(curr_bs, -1)
-            seasonal_pred = self.head(code)
+        elif self.features == 'MS':
+            target_idx = -1 
+            if self.revin.affine:
+                bias = self.revin.affine_bias[target_idx]
+                weight = self.revin.affine_weight[target_idx]
+                eps = self.revin.eps
+                final_pred = (final_pred - bias) / (weight + eps * weight)
             
-            trend_pred = self.linear_trend(x_trend_in)
+            # 获取最后一个特征的统计量 [1, 1, F] -> 切片 -> [1, 1, 1]
+            mean = self.revin.mean[:, :, target_idx:target_idx+1]
+            stdev = self.revin.stdev[:, :, target_idx:target_idx+1]
             
-            final = torch.cat([trend_pred, seasonal_pred], dim=1)
-            final_ci_pred = self.output_proj(final) + trend_pred
-            
-            if self.features == 'MS':
-                pred_final = final_ci_pred.unsqueeze(-1)
-                
-                target_mean = self.revin.mean[:, :, -1:]
-                target_std = self.revin.stdev[:, :, -1:]
-                if self.revin.affine:
-                    target_weight = self.revin.affine_weight[-1].view(1, 1, 1)
-                    target_bias = self.revin.affine_bias[-1].view(1, 1, 1)
-                    pred_final = (pred_final - target_bias) / (target_weight + self.revin.eps * target_weight)
-                return pred_final * target_std + target_mean
-            
-            else: # 'M'
-                pred_out = final_ci_pred.reshape(B, M_in, self.pred_len).permute(0, 2, 1)
-                if self.exo_adapter is not None:
-                    pred_out = pred_out + self.exo_adapter(pred_out)
-                return self.revin.denormalize(pred_out)
+            final_pred = final_pred * stdev + mean
+        
+        return final_pred
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
-        return self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
+        return self.forecast(x_enc)
+        
+        
+        
+        
+        
+        
+        
+        
+        
