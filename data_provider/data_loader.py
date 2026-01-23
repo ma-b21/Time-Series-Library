@@ -883,7 +883,7 @@ class Dataset_Futures(Dataset):
     def __read_data__(self):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
-        df_raw = df_raw[:len(df_raw) // 5]
+        df_raw = df_raw[:len(df_raw) // 2]
         df_raw = df_raw.replace([np.inf, -np.inf], np.nan)
         num_cols = df_raw.select_dtypes(include=[np.number]).columns
         df_raw[num_cols] = df_raw[num_cols].fillna(0.0)
