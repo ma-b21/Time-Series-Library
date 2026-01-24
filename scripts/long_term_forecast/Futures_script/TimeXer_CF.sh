@@ -1,4 +1,4 @@
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=0
 
 model_name=TimeXer
 
@@ -17,9 +17,9 @@ python -u run.py \
   --pred_len 96 \
   --e_layers 1 \
   --factor 3 \
-  --enc_in 13 \
-  --dec_in 13 \
-  --c_out 7 \
+  --enc_in 12 \
+  --dec_in 12 \
+  --c_out 12 \
   --d_model 256 \
   --batch_size 4 \
   --des 'exp' \

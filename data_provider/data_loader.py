@@ -895,6 +895,7 @@ class Dataset_Futures(Dataset):
         '''
         cols = list(df_raw.columns)
         cols.remove('date')
+        cols.remove('Return') 
         
         # 确保 target 在指定位置
         if self.target in cols:
@@ -919,37 +920,32 @@ class Dataset_Futures(Dataset):
         if self.features == 'M':
             # 多变量预测多变量：使用前 enc_in 列（包含target）
             if hasattr(self.args, 'enc_in') and self.args.enc_in > 0:
+                assert self.args.enc_in == 12, "For 'M' features, enc_in must be set to the number of main features including target."
                 # 使用前 enc_in-1 列 + target
                 if self.args.enc_in <= len(all_feature_cols):
                     selected_cols = all_feature_cols[:self.args.enc_in-1] + [self.target]
                 else:
                     selected_cols = all_feature_cols + [self.target]
                 df_data = df_raw[selected_cols]
-                # 保存额外的因子列用作辅助特征
-                self.extra_feature_cols = [col for col in all_feature_cols if col not in selected_cols]
             else:
                 # 使用所有列
                 df_data = df_raw[all_feature_cols + [self.target]]
-                self.extra_feature_cols = []
                 
         elif self.features == 'S':
             # 单变量预测单变量：只用 target
             df_data = df_raw[[self.target]]
-            # 所有其他列都作为辅助特征
-            self.extra_feature_cols = all_feature_cols
             
         elif self.features == 'MS':
             # 多变量预测单变量：使用前 enc_in 列预测 target
             if hasattr(self.args, 'enc_in') and self.args.enc_in > 0:
+                assert self.args.enc_in == 146, "For 'MS' features, enc_in must be set to the number of main features including target."
                 if self.args.enc_in <= len(all_feature_cols):
                     selected_cols = all_feature_cols[:self.args.enc_in-1]
                 else:
                     selected_cols = all_feature_cols
                 df_data = df_raw[selected_cols + [self.target]]
-                self.extra_feature_cols = [col for col in all_feature_cols if col not in selected_cols]
             else:
                 df_data = df_raw[all_feature_cols + [self.target]]
-                self.extra_feature_cols = []
 
         # 标准化主特征
         if self.scale:
@@ -958,20 +954,6 @@ class Dataset_Futures(Dataset):
             data = self.scaler.transform(df_data.values)
         else:
             data = df_data.values
-
-        # 处理辅助特征（因子）
-        if len(self.extra_feature_cols) > 0:
-            df_extra = df_raw[self.extra_feature_cols]
-            if self.scale:
-                self.extra_scaler = StandardScaler()
-                train_extra = df_extra[border1s[0]:border2s[0]]        
-                self.extra_scaler.fit(train_extra.values)
-                extra_data = self.extra_scaler.transform(df_extra.values)
-            else:
-                extra_data = df_extra.values
-            self.data_extra = extra_data[border1:border2]
-        else:
-            self.data_extra = None
 
         # 时间特征编码
         df_stamp = df_raw[['date']][border1:border2]
@@ -998,11 +980,9 @@ class Dataset_Futures(Dataset):
         # 打印信息，方便调试
         if self.set_type == 0:  # 只在训练集打印一次
             print(f"Dataset Info:")
+            print(f"  Data Columns: {df_data.columns.tolist()}")
             print(f"  Main features shape: {self.data_x.shape}")
             print(f"  Time features shape: {self.data_stamp.shape}")
-            if self.data_extra is not None:
-                print(f"  Extra features shape: {self.data_extra.shape}")
-                print(f"  Extra feature names: {self.extra_feature_cols}")
 
     def __getitem__(self, index):
         s_begin = index
@@ -1014,14 +994,6 @@ class Dataset_Futures(Dataset):
         seq_y = self.data_y[r_begin:r_end]
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
-        
-        # 如果有辅助特征，拼接到 mark 中
-        if self.data_extra is not None:
-            extra_x = self.data_extra[s_begin:s_end]
-            extra_y = self.data_extra[r_begin:r_end]
-            # 将辅助特征拼接到时间特征后面
-            seq_x_mark = np.concatenate([seq_x_mark, extra_x], axis=-1)
-            seq_y_mark = np.concatenate([seq_y_mark, extra_y], axis=-1)
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark
 
