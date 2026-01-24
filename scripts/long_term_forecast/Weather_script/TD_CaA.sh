@@ -13,7 +13,7 @@ python -u run.py \
   --features M \
   --seq_len 96 \
   --label_len 48 \
-  --pred_len 192 \
+  --pred_len 96 \
   --e_layers 1 \
   --factor 3 \
   --enc_in 21 \
@@ -22,15 +22,15 @@ python -u run.py \
   --des 'Exp' \
   --d_ff 512 \
   --d_model 42 \
-  --dropout 0.05 \
-  --k_lookback 8 \
+  --dropout 0.1 \
+  --k_lookback 24 \
   --moving_avg 1 \
-  --batch_size 32 \
+  --batch_size 4 \
   --learning_rate 0.001 \
   --train_epochs 15 \
   --patience 5 \
   --method "Dynamic"\
-  --hidden 576\
+  --hidden 24\
   --bias \
   --interact
 

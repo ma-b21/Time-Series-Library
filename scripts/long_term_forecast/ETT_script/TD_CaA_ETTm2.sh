@@ -27,13 +27,17 @@ for pred_len in "${pred_lens[@]}"; do
       --d_ff 128 \
       --des 'Exp' \
       --itr 1 \
-      --d_model 128 \
-      --dropout 0.1 \
-      --batch_size 32 \
-      --learning_rate 0.00015 \
+      --d_model 14 \
+      --dropout 0.15 \
+      --batch_size 4 \
+      --learning_rate 0.001 \
       --moving_avg 1 \
       --train_epochs 20 \
-      --k_lookback 96 \
+      --k_lookback 48 \
       --patience 3 \
-      --fft 
+      --fft \
+      --method "Dynamic"\
+      --hidden 15\
+      --bias \
+      --interact
 done

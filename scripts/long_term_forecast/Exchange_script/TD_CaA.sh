@@ -13,7 +13,7 @@ python -u run.py \
   --features M \
   --seq_len 96 \
   --label_len 48 \
-  --pred_len 336 \
+  --pred_len 96 \
   --e_layers 2 \
   --d_layers 1 \
   --factor 3 \
@@ -21,17 +21,21 @@ python -u run.py \
   --dec_in 8 \
   --c_out 8 \
   --d_ff 64 \
-  --k_lookback 16 \
-  --d_model 32 \
+  --k_lookback 96\
+  --d_model 8 \
   --moving_avg 16 \
   --des 'Exp' \
-  --batch_size 4 \
+  --batch_size 3 \
   --dropout 0.05 \
-  --learning_rate 0.0001 \
-  --train_epochs 1 \
+  --learning_rate 0.00015 \
+  --train_epochs 3 \
   --patience 5 \
   --fft \
-  --itr 1
+  --itr 1\
+  --method "Dynamic"\
+  --hidden 96\
+  --bias \
+  --interact
 
 # python -u run.py \
 #   --task_name long_term_forecast \

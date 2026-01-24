@@ -1,5 +1,5 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=0
 
 model_name=TD_CaA
 seq_len=96
@@ -18,8 +18,6 @@ for pred_len in "${pred_lens[@]}"; do
       --seq_len $seq_len \
       --label_len 48 \
       --pred_len $pred_len \
-      --e_layers 2 \
-      --d_layers 1 \
       --factor 3 \
       --enc_in 7 \
       --dec_in 7 \
@@ -27,13 +25,15 @@ for pred_len in "${pred_lens[@]}"; do
       --d_ff 128 \
       --des 'Exp' \
       --itr 1 \
-      --d_model 128 \
-      --dropout 0.05 \
-      --batch_size 32 \
-      --learning_rate 0.00015 \
+      --d_model 14 \
+      --dropout 0.2 \
+      --batch_size 4 \
+      --learning_rate 0.0015 \
       --train_epochs 15 \
-      --fft\
-      --moving_avg 1 \
-      --k_lookback 96 \
-      --patience 10
+      --k_lookback 48 \
+      --patience 3 \
+      --method "Dynamic"\
+      --hidden 15\
+      --bias \
+      --interact
 done
