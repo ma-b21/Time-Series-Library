@@ -26,11 +26,11 @@ for pred_len in "${pred_lens[@]}"; do
       --c_out 7 \
       --d_ff 128 \
       --des 'Exp' \
-      --d_model 28 \
+      --d_model 64 \
       --dropout 0.25 \
       --moving_avg 10 \
       --batch_size 4 \
-      --learning_rate 0.0005 \
+      --learning_rate 0.0015 \
       --train_epochs 20 \
       --k_lookback 48 \
       --patience 3 \

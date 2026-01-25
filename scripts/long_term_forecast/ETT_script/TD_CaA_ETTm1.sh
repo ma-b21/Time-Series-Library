@@ -25,7 +25,7 @@ for pred_len in "${pred_lens[@]}"; do
       --d_ff 128 \
       --des 'Exp' \
       --itr 1 \
-      --d_model 14 \
+      --d_model 64 \
       --dropout 0.2 \
       --batch_size  3\
       --learning_rate 0.0015 \

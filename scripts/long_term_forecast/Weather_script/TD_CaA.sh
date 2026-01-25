@@ -21,16 +21,16 @@ python -u run.py \
   --c_out 21 \
   --des 'Exp' \
   --d_ff 512 \
-  --d_model 42 \
-  --dropout 0.1 \
-  --k_lookback 24 \
+  --d_model 128 \
+  --dropout 0.2 \
+  --k_lookback 48 \
   --moving_avg 1 \
   --batch_size 4 \
-  --learning_rate 0.001 \
+  --learning_rate 0.002 \
   --train_epochs 15 \
-  --patience 5 \
+  --patience 3 \
   --method "Dynamic"\
-  --hidden 24\
+  --hidden 24 \
   --bias \
   --interact
 

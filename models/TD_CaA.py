@@ -71,9 +71,28 @@ class Model(nn.Module):
             nn.Linear(self.hidden * self.seq_len, self.pred_len, self.bias)
         )  #[B*E, P]
         
-        
-        self.corr = GatedInterAct(self.endo_dim, self.d_model, self.dropout)
         self.linear_head = nn.Linear(2 * self.pred_len, self.pred_len, self.bias)
+
+        self.apply(self._init_weights)
+    
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            # 使用 Xavier 初始化解决线性层敏感问题
+            nn.init.xavier_uniform_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Conv1d):
+            # 卷积层通常适合 Kaiming 初始化
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        elif isinstance(m, nn.GRU):
+            # GRU/LSTM 最需要正交初始化 (Orthogonal Initialization)
+            for name, param in m.named_parameters():
+                if 'weight_ih' in name:
+                    nn.init.xavier_uniform_(param.data)
+                elif 'weight_hh' in name:
+                    nn.init.orthogonal_(param.data) # 关键！正交初始化对 RNN 收敛极其重要
+                elif 'bias' in name:
+                    nn.init.constant_(param.data, 0)
         
     def forecast(self, x):
         # preprocess
@@ -137,9 +156,7 @@ class Model(nn.Module):
             
             final_pred = final_pred * stdev + mean
         
-        correlation = self.corr(final_pred.permute(0, 2, 1))
-        
-        return final_pred + correlation
+        return final_pred
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
         return self.forecast(x_enc)
