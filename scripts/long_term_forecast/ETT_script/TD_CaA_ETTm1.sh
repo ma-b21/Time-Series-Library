@@ -27,7 +27,7 @@ for pred_len in "${pred_lens[@]}"; do
       --itr 1 \
       --d_model 14 \
       --dropout 0.2 \
-      --batch_size 4 \
+      --batch_size  3\
       --learning_rate 0.0015 \
       --train_epochs 15 \
       --k_lookback 48 \
