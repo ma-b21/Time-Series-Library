@@ -16,6 +16,11 @@ if __name__ == '__main__':
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
     np.random.seed(fix_seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(fix_seed)
+        torch.cuda.manual_seed_all(fix_seed) # 如果你有多个GPU
+    torch.backends.cudnn.benchmark = False 
+    torch.backends.cudnn.deterministic = True 
 
     parser = argparse.ArgumentParser(description='TimesNet')
 
@@ -201,7 +206,7 @@ if __name__ == '__main__':
         for ii in range(args.itr):
             # setting record of experiments
             exp = Exp(args)  # set experiments
-            setting = '{}_{}_{}_{}_bs{}_lr{}_pt{}_dp{}_dm{}_ma{}_lb{}_fft{}_{}'.format(
+            setting = '{}_{}_{}_{}_bs{}_lr{}_pt{}_dp{}_dm{}_ma{}_lb{}_hidden{}_{}'.format(
                 args.task_name,
                 args.model_id,
                 args.model,
@@ -213,7 +218,7 @@ if __name__ == '__main__':
                 args.d_model,
                 args.moving_avg,
                 args.k_lookback,
-                args.fft,
+                args.hidden,
                 args.des, ii)
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
