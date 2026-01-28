@@ -3,10 +3,8 @@ export CUDA_VISIBLE_DEVICES=0
 
 model_name=TD_CaA
 seq_len=96
-pred_lens=(96)
 
-for pred_len in "${pred_lens[@]}"; do
-    python run.py \
+python run.py \
       --task_name long_term_forecast \
       --is_training 1 \
       --root_path ./dataset/ETT-small/ \
@@ -39,9 +37,7 @@ for pred_len in "${pred_lens[@]}"; do
       --hidden 28 \
       --bias \
       --interact
-done
 
-# for pred_len in "${pred_lens[@]}"; do
 #     python run.py \
 #       --task_name long_term_forecast \
 #       --is_training 1 \
@@ -75,9 +71,7 @@ done
 #       --hidden 28 \
 #       --bias \
 #       --interact
-# done
 
-# for pred_len in "${pred_lens[@]}"; do
 #     python run.py \
 #       --task_name long_term_forecast \
 #       --is_training 1 \
@@ -112,9 +106,7 @@ done
 #       --hidden 28 \
 #       --bias \
 #       --interact
-# done
 
-# for pred_len in "${pred_lens[@]}"; do
 #     python run.py \
 #       --task_name long_term_forecast \
 #       --is_training 1 \
@@ -149,4 +141,3 @@ done
 #       --hidden 26 \
 #       --bias \
 #       --interact
-# done
