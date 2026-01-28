@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class RevIN(nn.Module):
     def __init__(self, num_features: int, eps=1e-5, affine=True):
         super(RevIN, self).__init__()
@@ -10,20 +11,28 @@ class RevIN(nn.Module):
         self.affine = affine
         if self.affine:
             self._init_params()
+
     def _init_params(self):
         self.affine_weight = nn.Parameter(torch.ones(self.num_features))
         self.affine_bias = nn.Parameter(torch.zeros(self.num_features))
+
     def _get_statistics(self, x):
-        dim2reduce = tuple(range(x.ndim - 1))
+        # x shape: [Batch, Time, Features]
+        dim2reduce = 1 
+        
         self.mean = torch.mean(x, dim=dim2reduce, keepdim=True).detach()
         self.stdev = torch.sqrt(torch.var(x, dim=dim2reduce, keepdim=True, unbiased=False) + self.eps).detach()
+        
+        # Output shape: [Batch, 1, Features]
         return self.mean, self.stdev
+
     def normalize(self, x):
         mean, stdev = self._get_statistics(x)
         x = (x - mean) / stdev
         if self.affine:
             x = x * self.affine_weight + self.affine_bias
         return x
+
     def denormalize(self, x):
         if self.affine:
             x = (x - self.affine_bias) / (self.affine_weight + self.eps*self.affine_weight)

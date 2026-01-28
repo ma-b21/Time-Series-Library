@@ -160,9 +160,9 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', type=float, default=0.1, help='KNN for Graph Construction')
     parser.add_argument('--top_p', type=float, default=0.5, help='Dynamic Routing in MoE')
     parser.add_argument('--pos', type=int, choices=[0, 1], default=1, help='Positional Embedding. Set pos to 0 or 1')
+
+    # TD_CaA
     parser.add_argument('--k_lookback', type=int, default=64, help='Dynamic Routing in MoE')
-    parser.add_argument('--time_dim', type=int, default=8, help='time dim')
-    parser.add_argument('--fft', default=False, action="store_true", help="FFT")
     parser.add_argument('--method', default="Dynamic", help="Methods for distribution shift tracer used")
     parser.add_argument('--hidden', type=int, default=10, help="hidden size")
     parser.add_argument('--bias', default=False, action="store_true", help="bias")
@@ -206,7 +206,7 @@ if __name__ == '__main__':
         for ii in range(args.itr):
             # setting record of experiments
             exp = Exp(args)  # set experiments
-            setting = '{}_{}_{}_{}_bs{}_lr{}_pt{}_dp{}_dm{}_ma{}_lb{}_hidden{}_{}'.format(
+            setting = '{}_{}_{}_{}_bs{}_lr{}_pt{}_dp{}_dm{}_lb{}_hidden{}_{}'.format(
                 args.task_name,
                 args.model_id,
                 args.model,
@@ -216,7 +216,6 @@ if __name__ == '__main__':
                 args.patience,
                 args.dropout,
                 args.d_model,
-                args.moving_avg,
                 args.k_lookback,
                 args.hidden,
                 args.des, ii)

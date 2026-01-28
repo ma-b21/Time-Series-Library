@@ -3,16 +3,6 @@ import torch.nn as nn
 from einops.layers.torch import Rearrange
 from layers.TD_CaA_utils import RevIN, Temp_Causal_Address, DynamicDistributionShiftTracer, GatedInterAct, SimpleDistributionShiftTracer
 
-###TODO 
-#比较RNN和TCA，因为回看seqlen时表现好，有点像RNN呢
-#SimpleDistreiTracer表现差，说明project效果好，这里可以做消融实验
-# new1 升维度，没变输入逻辑
-# new2 没有升维度，只变了输入逻辑
-# new3 new2+Gelu Yes
-# new4 new3 + alpha NO
-# new5 new3 + 1-alpha/ alpha  NO
-# new6 new3+ corr NO
-
 
 
 class Model(nn.Module):
