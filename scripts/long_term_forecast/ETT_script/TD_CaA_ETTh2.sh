@@ -94,16 +94,16 @@ python run.py \
 #       --d_ff 128 \
 #       --des 'Exp' \
 #       --itr 1 \
-#       --d_model 64 \
-#       --dropout 0.1 \
+#       --d_model 32 \
+#       --dropout 0.25 \
 #       --batch_size 32 \
 #       --moving_avg 3 \
-#       --learning_rate 0.015 \
-#       --k_lookback 96 \
+#       --learning_rate 0.03 \
+#       --k_lookback 32 \
 #       --train_epochs 20 \
 #       --patience 3 \
 #       --method "Dynamic"\
-#       --hidden 26 \
+#       --hidden 16 \
 #       --bias \
 #       --interact
 
@@ -133,7 +133,7 @@ python run.py \
 #       --dropout 0.1 \
 #       --batch_size 32 \
 #       --moving_avg 3 \
-#       --learning_rate 0.0035 \
+#       --learning_rate 0.00375 \
 #       --k_lookback 96 \
 #       --train_epochs 20 \
 #       --patience 3 \

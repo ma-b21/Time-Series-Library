@@ -7,7 +7,7 @@ python -u run.py \
   --is_training 1 \
   --root_path ./dataset/exchange_rate/ \
   --data_path exchange_rate.csv \
-  --model_id Exchange_96_336 \
+  --model_id Exchange_96_96 \
   --model $model_name \
   --data custom \
   --features M \
@@ -21,92 +21,115 @@ python -u run.py \
   --dec_in 8 \
   --c_out 8 \
   --d_ff 64 \
-  --k_lookback 96\
-  --d_model 8 \
-  --moving_avg 16 \
   --des 'Exp' \
-  --batch_size 3 \
-  --dropout 0.05 \
-  --learning_rate 0.00015 \
-  --train_epochs 3 \
-  --patience 5 \
-  --fft \
+  --train_epochs 20 \
+  --patience 3 \
   --itr 1\
+  --batch_size 16 \
+  --dropout 0.1 \
+  --learning_rate 0.01 \
+  --k_lookback 96\
+  --d_model 256 \
+  --hidden 24 \
   --method "Dynamic"\
-  --hidden 96\
   --bias \
   --interact
 
-# python -u run.py \
-#   --task_name long_term_forecast \
-#   --is_training 1 \
-#   --root_path ./dataset/exchange_rate/ \
-#   --data_path exchange_rate.csv \
-#   --model_id Exchange_96_192 \
-#   --model $model_name \
-#   --data custom \
-#   --features M \
-#   --seq_len 96 \
-#   --label_len 48 \
-#   --pred_len 192 \
-#   --e_layers 2 \
-#   --d_layers 1 \
-#   --factor 3 \
-#   --enc_in 8 \
-#   --dec_in 8 \
-#   --c_out 8 \
-#   --d_model 64 \
-#   --d_ff 64 \
-#   --top_k 5 \
-#   --des 'Exp' \
-#   --itr 1
+python -u run.py \
+  --task_name long_term_forecast \
+  --is_training 1 \
+  --root_path ./dataset/exchange_rate/ \
+  --data_path exchange_rate.csv \
+  --model_id Exchange_96_192 \
+  --model $model_name \
+  --data custom \
+  --features M \
+  --seq_len 96 \
+  --label_len 48 \
+  --pred_len 192 \
+  --e_layers 2 \
+  --d_layers 1 \
+  --factor 3 \
+  --enc_in 8 \
+  --dec_in 8 \
+  --c_out 8 \
+  --d_ff 64 \
+  --des 'Exp' \
+  --train_epochs 20 \
+  --patience 3 \
+  --itr 1\
+  --batch_size 16 \
+  --dropout 0.25 \
+  --learning_rate 0.003 \
+  --k_lookback 32 \
+  --d_model 128 \
+  --hidden 32 \
+  --method "Dynamic"\
+  --bias \
+  --interact
 
-# python -u run.py \
-#   --task_name long_term_forecast \
-#   --is_training 1 \
-#   --root_path ./dataset/exchange_rate/ \
-#   --data_path exchange_rate.csv \
-#   --model_id Exchange_96_336 \
-#   --model $model_name \
-#   --data custom \
-#   --features M \
-#   --seq_len 96 \
-#   --label_len 48 \
-#   --pred_len 336 \
-#   --e_layers 2 \
-#   --d_layers 1 \
-#   --factor 3 \
-#   --enc_in 8 \
-#   --dec_in 8 \
-#   --c_out 8 \
-#   --d_model 32 \
-#   --d_ff 32 \
-#   --top_k 5 \
-#   --des 'Exp' \
-#   --itr 1 \
-#   --train_epochs 1
+python -u run.py \
+  --task_name long_term_forecast \
+  --is_training 1 \
+  --root_path ./dataset/exchange_rate/ \
+  --data_path exchange_rate.csv \
+  --model_id Exchange_96_336 \
+  --model $model_name \
+  --data custom \
+  --features M \
+  --seq_len 96 \
+  --label_len 48 \
+  --pred_len 336 \
+  --e_layers 2 \
+  --d_layers 1 \
+  --factor 3 \
+  --enc_in 8 \
+  --dec_in 8 \
+  --c_out 8 \
+  --d_ff 64 \
+  --des 'Exp' \
+  --train_epochs 20 \
+  --patience 3 \
+  --itr 1\
+  --batch_size 16 \
+  --dropout 0.15 \
+  --learning_rate 0.03 \
+  --k_lookback 96 \
+  --d_model 256 \
+  --hidden 64 \
+  --method "Dynamic"\
+  --bias \
+  --interact
 
-# python -u run.py \
-#   --task_name long_term_forecast \
-#   --is_training 1 \
-#   --root_path ./dataset/exchange_rate/ \
-#   --data_path exchange_rate.csv \
-#   --model_id Exchange_96_720 \
-#   --model $model_name \
-#   --data custom \
-#   --features M \
-#   --seq_len 96 \
-#   --label_len 48 \
-#   --pred_len 720 \
-#   --e_layers 2 \
-#   --d_layers 1 \
-#   --factor 3 \
-#   --enc_in 8 \
-#   --dec_in 8 \
-#   --c_out 8 \
-#   --d_model 32 \
-#   --d_ff 32 \
-#   --top_k 5 \
-#   --des 'Exp' \
-#   --itr 1 \
-#   --train_epochs 1
+python -u run.py \
+  --task_name long_term_forecast \
+  --is_training 1 \
+  --root_path ./dataset/exchange_rate/ \
+  --data_path exchange_rate.csv \
+  --model_id Exchange_96_720 \
+  --model $model_name \
+  --data custom \
+  --features M \
+  --seq_len 96 \
+  --label_len 48 \
+  --pred_len 720 \
+  --e_layers 2 \
+  --d_layers 1 \
+  --factor 3 \
+  --enc_in 8 \
+  --dec_in 8 \
+  --c_out 8 \
+  --d_ff 64 \
+  --des 'Exp' \
+  --train_epochs 20 \
+  --patience 3 \
+  --itr 1\
+  --batch_size 16 \
+  --dropout 0.15 \
+  --learning_rate 0.0001 \
+  --k_lookback 64\
+  --d_model 32 \
+  --hidden 28 \
+  --method "Dynamic"\
+  --bias \
+  --interact

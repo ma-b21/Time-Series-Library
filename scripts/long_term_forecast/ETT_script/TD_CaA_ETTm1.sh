@@ -63,7 +63,7 @@ seq_len=96
 #       --k_lookback 96 \
 #       --patience 3 \
 #       --method "Dynamic"\
-#       --hidden 35 \
+#       --hidden 34 \
 #       --bias \
 #       --interact
 
@@ -90,7 +90,7 @@ seq_len=96
 #       --d_model 64 \
 #       --dropout 0.1 \
 #       --batch_size  32 \
-#       --learning_rate 0.00015 \
+#       --learning_rate 0.0002 \
 #       --train_epochs 15 \
 #       --k_lookback 96 \
 #       --patience 3 \
