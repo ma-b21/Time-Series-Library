@@ -96,7 +96,11 @@ class Model(nn.Module):
         # backbone
         trend = self.linear_trend(endo_CI) #[B*E, P]
         
+        # 输出x的一个batch，以及x_TCA对应的batch
+        # print(x[0][:,:20].detach().cpu().numpy().T)
         x_TCA = self.TCA(endo, x) #[B, E, F+1, T]
+        # print(x_TCA.squeeze(1)[0][:,:20].detach().cpu().numpy().T)
+        # raise ValueError("Debugging: Check the output of TCA layer.")
         x_TCA_flat = x_TCA.reshape(B * E, F+1, T).permute(0, 2, 1)
         # new*
         x_gru_in = self.linear_deep(x_TCA_flat)
@@ -134,15 +138,15 @@ class Model(nn.Module):
             
         elif self.features == 'MS':
             target_idx = -1 
+            
             if self.revin.affine:
                 bias = self.revin.affine_bias[target_idx]
                 weight = self.revin.affine_weight[target_idx]
                 eps = self.revin.eps
                 final_pred = (final_pred - bias) / (weight + eps * weight)
-            
-            # 获取最后一个特征的统计量 [1, 1, F]-> [1, 1, 1]
-            mean = self.revin.mean[:, :, target_idx:target_idx+1]
-            stdev = self.revin.stdev[:, :, target_idx:target_idx+1]
+
+            mean = self.revin.mean[:, :, -1:]
+            stdev = self.revin.stdev[:, :, -1:]
             
             final_pred = final_pred * stdev + mean
         
