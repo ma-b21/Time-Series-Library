@@ -1,6 +1,6 @@
 export CUDA_VISIBLE_DEVICES=2
 
-model_name=TD_CaA
+model_name=EATA
 
 python -u run.py \
   # --task_name long_term_forecast \

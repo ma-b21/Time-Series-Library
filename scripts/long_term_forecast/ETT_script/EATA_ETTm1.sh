@@ -1,7 +1,7 @@
 #!/bin/bash
 export CUDA_VISIBLE_DEVICES=2
 
-model_name=TD_CaA
+model_name=EATA
 seq_len=96
     
 # python run.py \

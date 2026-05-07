@@ -168,7 +168,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             adjust_learning_rate(model_optim, epoch + 1, self.args)
 
         best_model_path = path + '/' + 'checkpoint.pth'
-        self.model.load_state_dict(torch.load(best_model_path))
+        self.model.load_state_dict(torch.load(best_model_path, map_location=self.device))
 
         return self.model
 
@@ -176,12 +176,15 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         test_data, test_loader = self._get_data(flag='test')
         if test:
             print('loading model')
-            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
+            self.model.load_state_dict(
+                torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth'), map_location=self.device)
+            )
 
         preds = []
         trues = []
+        minimal_test_output = os.environ.get("TSL_MINIMAL_TEST_OUTPUT", "0") == "1"
         folder_path = './test_results/' + setting + '/'
-        if not os.path.exists(folder_path):
+        if not minimal_test_output and not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
         self.model.eval()
@@ -223,7 +226,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 preds.append(pred)
                 trues.append(true)
-                if i % 20 == 0:
+                if not minimal_test_output and i % 20 == 0:
                     input = batch_x.detach().cpu().numpy()
                     if test_data.scale and self.args.inverse:
                         shape = input.shape
@@ -271,10 +274,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         f.write('\n')
         f.write('\n')
         f.close()
-        plot_predictions_vs_targets(preds, trues, folder_path=folder_path)
+        if not minimal_test_output:
+            plot_predictions_vs_targets(preds, trues, folder_path=folder_path)
 
         np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
-        np.save(folder_path + 'pred.npy', preds)
-        np.save(folder_path + 'true.npy', trues)
+        if not minimal_test_output:
+            np.save(folder_path + 'pred.npy', preds)
+            np.save(folder_path + 'true.npy', trues)
 
         return

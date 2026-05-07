@@ -1,6 +1,6 @@
 import os
 import torch
-from models import Autoformer, TD_CaA, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
+from models import Autoformer, TD_CaA, EATA, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, \
     WPMixer, MultiPatchFormer, KANAD, MSGNet, TimeFilter, Sundial, TimeMoE, Chronos, TiRex,\
@@ -48,6 +48,7 @@ class Exp_Basic(object):
             'Chronos': Chronos,
             'TiRex': TiRex,
             'Chronos2': Chronos2,
+            'EATA': EATA,
             'TD_CaA': TD_CaA
         }
         if args.model == 'Mamba':
@@ -64,10 +65,17 @@ class Exp_Basic(object):
 
     def _acquire_device(self):
         if self.args.use_gpu and self.args.gpu_type == 'cuda':
-            os.environ["CUDA_VISIBLE_DEVICES"] = str(
-                self.args.gpu) if not self.args.use_multi_gpu else self.args.devices
-            device = torch.device('cuda:{}'.format(self.args.gpu))
-            print('Use GPU: cuda:{}'.format(self.args.gpu))
+            if not self.args.use_multi_gpu:
+                visible = os.environ.get("CUDA_VISIBLE_DEVICES", "")
+                if visible and "," not in visible:
+                    device = torch.device('cuda:0')
+                    print('Use GPU: cuda:0 (visible physical GPU {})'.format(visible))
+                else:
+                    device = torch.device('cuda:{}'.format(self.args.gpu))
+                    print('Use GPU: cuda:{}'.format(self.args.gpu))
+            else:
+                device = torch.device('cuda:0')
+                print('Use GPU: cuda:0 (visible devices: {})'.format(self.args.devices))
         elif self.args.use_gpu and self.args.gpu_type == 'mps':
             device = torch.device('mps')
             print('Use GPU: mps')

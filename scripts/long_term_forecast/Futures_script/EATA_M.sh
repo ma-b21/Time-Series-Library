@@ -1,13 +1,13 @@
 export CUDA_VISIBLE_DEVICES=0
 
-model_name=TD_CaA
+model_name=EATA
 
 # python -u run.py \
 #     --task_name long_term_forecast \
 #     --is_training 1 \
 #     --root_path ./dataset/futures/ \
-#     --data_path futures_TA.csv \
-#     --model_id Futures_TA_96_96 \
+#     --data_path futures_M.csv \
+#     --model_id Futures_M_96_96 \
 #     --model $model_name \
 #     --data Futures \
 #     --target LastPrice \
@@ -26,7 +26,7 @@ model_name=TD_CaA
 #     --batch_size 32 \
 #     --learning_rate 0.005 \
 #     --train_epochs 20 \
-#     --k_lookback 96 \
+#     --k_lookback 64 \
 #     --patience 3 \
 #     --itr 1\
 #     --method "Dynamic"\
@@ -39,8 +39,8 @@ model_name=TD_CaA
 #     --task_name long_term_forecast \
 #     --is_training 1 \
 #     --root_path ./dataset/futures/ \
-#     --data_path futures_TA.csv \
-#     --model_id Futures_TA_96_192 \
+#     --data_path futures_M.csv \
+#     --model_id Futures_M_96_192 \
 #     --model $model_name \
 #     --data Futures \
 #     --target LastPrice \
@@ -53,13 +53,13 @@ model_name=TD_CaA
 #     --enc_in 12 \
 #     --dec_in 12 \
 #     --c_out 12 \
-#     --d_model 32 \
+#     --d_model 64 \
 #     --dropout 0.05 \
 #     --moving_avg 10 \
 #     --batch_size 32 \
 #     --learning_rate 0.00075 \
 #     --train_epochs 20 \
-#     --k_lookback 96 \
+#     --k_lookback 64 \
 #     --patience 3 \
 #     --itr 1\
 #     --method "Dynamic"\
@@ -71,8 +71,8 @@ model_name=TD_CaA
 #     --task_name long_term_forecast \
 #     --is_training 1 \
 #     --root_path ./dataset/futures/ \
-#     --data_path futures_TA.csv \
-#     --model_id Futures_TA_96_336 \
+#     --data_path futures_M.csv \
+#     --model_id Futures_M_96_336 \
 #     --model $model_name \
 #     --data Futures \
 #     --target LastPrice \
@@ -91,7 +91,7 @@ model_name=TD_CaA
 #     --batch_size 32 \
 #     --learning_rate 0.001 \
 #     --train_epochs 20 \
-#     --k_lookback 96 \
+#     --k_lookback 64 \
 #     --patience 3 \
 #     --itr 1\
 #     --method "Dynamic"\
@@ -103,8 +103,8 @@ python -u run.py \
     --task_name long_term_forecast \
     --is_training 1 \
     --root_path ./dataset/futures/ \
-    --data_path futures_TA.csv \
-    --model_id Futures_TA_96_720 \
+    --data_path futures_M.csv \
+    --model_id Futures_M_96_720 \
     --model $model_name \
     --data Futures \
     --target LastPrice \
@@ -123,7 +123,7 @@ python -u run.py \
     --batch_size 32 \
     --learning_rate 0.001 \
     --train_epochs 20 \
-    --k_lookback 96 \
+    --k_lookback 64 \
     --patience 3 \
     --itr 1\
     --method "Dynamic"\

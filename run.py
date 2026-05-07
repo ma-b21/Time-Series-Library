@@ -1,4 +1,5 @@
 import argparse
+import os
 import torch
 import torch.backends
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
@@ -12,6 +13,16 @@ import random
 import numpy as np
 
 if __name__ == '__main__':
+    torch_num_threads = os.environ.get("TSL_TORCH_NUM_THREADS")
+    if torch_num_threads:
+        torch.set_num_threads(max(1, int(torch_num_threads)))
+    torch_interop_threads = os.environ.get("TSL_TORCH_INTEROP_THREADS")
+    if torch_interop_threads:
+        try:
+            torch.set_num_interop_threads(max(1, int(torch_interop_threads)))
+        except RuntimeError:
+            pass
+
     fix_seed = 2021
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
